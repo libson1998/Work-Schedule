@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:work_schedule/screens/screen_scheduling.dart';
+import 'package:work_schedule/utils/constants.dart';
+import 'package:work_schedule/utils/shared_preference.dart';
 import 'package:work_schedule/utils/util_widget.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -7,12 +11,12 @@ class HomeScreen extends StatefulWidget {
   List<String> selectedWeekDays = [];
   List<String> selectedSession = ["", "", "", "", "", "", ""];
 
-  HomeScreen(
-      {Key? key,
-      // required this.message,
-      required this.selectedWeekDays,
-      required this.selectedSession})
-      : super(key: key);
+  HomeScreen({
+    Key? key,
+    // required this.message,
+    required this.selectedWeekDays,
+    required this.selectedSession,
+  }) : super(key: key);
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -21,8 +25,17 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool isSelected = false;
   List<String> weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  List<String> oldSession = [];
+  String oldSchedule = "";
 
   bool isButtonClicked = false;
+  String oldMessage = "";
+
+  @override
+  void initState() {
+    getPrferences();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -220,7 +233,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   print(widget.selectedWeekDays);
                   print(widget.selectedSession);
 
-                  String message = "Hi Jose you are available in ";
+                  String message = "";
+                  String firstMessage = "Hi Jose you are available in";
                   for (var i = 0; i < widget.selectedSession.length; i++) {
                     if (widget.selectedSession[i].isNotEmpty) {
                       message = "$message${weekDays[i]} ";
@@ -236,7 +250,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       message = message.replaceAll(
                           "Morning,Afternoon,Evening", "Whole day");
                     }
+                    String jsonString = json.encode(message);
+                    print(jsonString);
+                    SharedPreference().putStringPreference(
+                        PreferenceConstants.strNewData, jsonString);
+                    SharedPreference().putStringPreference(
+                        PreferenceConstants.strOldData, oldSchedule);
                   }
+
                   Future.delayed(const Duration(seconds: 3), () {
                     setState(() {
                       isButtonClicked = false;
@@ -248,9 +269,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     context,
                     MaterialPageRoute(
                         builder: (context) => SchedulingScreen(
-                            message: message,
-                            selectedWeekDays: widget.selectedWeekDays,
-                            selectedSession: widget.selectedSession)),
+                              message: message,
+                              oldMessage: firstMessage,
+                              selectedWeekDays: widget.selectedWeekDays,
+                              selectedSession: widget.selectedSession,
+                            )),
                   );
                 }),
               )
@@ -259,5 +282,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  getPrferences() async {
+    String newScheduleData = await SharedPreference()
+        .getStringPreference(PreferenceConstants.strNewData);
+    setState(() {
+      oldSchedule = newScheduleData;
+    });
   }
 }

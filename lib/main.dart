@@ -17,7 +17,11 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
         ),
         title: 'Work Schedule',
-        home:  SchedulingScreen(
-            message: "", selectedWeekDays: [], selectedSession: []));
+        home: SchedulingScreen(
+          message: "",
+          oldMessage: '',
+          selectedWeekDays: [],
+          selectedSession: [],
+        ));
   }
 }
